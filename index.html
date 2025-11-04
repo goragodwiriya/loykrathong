@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Loy Krathong - Create Your Floating Dream</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=Noto+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="moon-loading">
+      <div class="moon"></div>
+      <p>Preparing your virtual Loy Krathong experience...</p>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div id="main-container">
+    <!-- Background Scene -->
+    <div class="background-scene">
+      <div class="moon-container">
+        <div class="moon">
+          <div class="moon-craters">
+            <div class="crater crater-1"></div>
+            <div class="crater crater-2"></div>
+            <div class="crater crater-3"></div>
+            <div class="crater crater-4"></div>
+          </div>
+        </div>
+        <div class="moon-glow"></div>
+      </div>
+
+      <div class="river-container">
+        <div class="water-surface">
+          <div class="water-waves"></div>
+          <div class="water-reflections"></div>
+        </div>
+
+        <!-- Floating Krathongs Container -->
+        <div id="floating-krathongs">
+          <!-- Krathongs will be dynamically added here -->
+        </div>
+
+        <!-- Current User's Krathong -->
+        <div id="current-krathong-container">
+          <div id="current-krathong" class="krathong floating"></div>
+        </div>
+      </div>
+
+      <!-- Stars -->
+      <div class="stars">
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        <div class="star star-4"></div>
+        <div class="star star-5"></div>
+        <div class="star star-6"></div>
+        <div class="star star-7"></div>
+        <div class="star star-8"></div>
+      </div>
+    </div>
+
+    <!-- UI Overlay -->
+    <div class="ui-overlay">
+      <!-- Header -->
+      <header class="header">
+        <h1><i class="fas fa-water"></i> Virtual Loy Krathong</h1>
+        <p>Create your floating dream and release it into the digital river</p>
+      </header>
+      <div class="sidebar">
+        <!-- Festival Information -->
+        <section class="festival-info">
+          <h2><i class="fas fa-info-circle"></i> About Loy Krathong</h2>
+          <p>Loy Krathong is a beautiful Thai festival celebrating the water goddess Ganga. People create beautiful lotus-shaped floats (krathongs) adorned with flowers, candles, and incense sticks. By floating their krathongs on the water, people pay respects and make wishes for prosperity and happiness.</p>
+          <div class="krathong-counter">
+            <i class="fas fa-heart"></i>
+            <span>Total Krathongs Released: <span id="total-count">0</span></span>
+          </div>
+        </section>
+
+        <!-- Krathong Creation Panel -->
+        <section class="creation-panel">
+          <h2><i class="fas fa-palette"></i> Choose Your Krathong</h2>
+
+          <div class="krathong-designer">
+            <!-- Base Selection -->
+            <div class="component-section">
+              <div class="options-grid" id="base-options">
+                <div class="option" data-component="base" data-value="lotus">
+                  <div class="option-preview lotus-base"></div>
+                  <span>Lotus Leaf</span>
+                </div>
+                <div class="option" data-component="base" data-value="banana">
+                  <div class="option-preview banana-base"></div>
+                  <span>Banana Leaf</span>
+                </div>
+                <div class="option" data-component="base" data-value="traditional">
+                  <div class="option-preview traditional-base"></div>
+                  <span>Traditional</span>
+                </div>
+                <div class="option" data-component="base" data-value="modern">
+                  <div class="option-preview modern-base"></div>
+                  <span>Modern</span>
+                </div>
+                <div class="option" data-component="base" data-value="jasmine">
+                  <div class="option-preview jasmine-base"></div>
+                  <span>Jasmine</span>
+                </div>
+                <div class="option" data-component="base" data-value="rose">
+                  <div class="option-preview rose-base"></div>
+                  <span>Rose</span>
+                </div>
+                <div class="option" data-component="base" data-value="marigold">
+                  <div class="option-preview marigold-base"></div>
+                  <span>Marigold</span>
+                </div>
+                <div class="option" data-component="base" data-value="orchid">
+                  <div class="option-preview orchid-base"></div>
+                  <span>Orchid</span>
+                </div>
+                <div class="option" data-component="base" data-value="candle">
+                  <div class="option-preview candle-base"></div>
+                  <span>Traditional</span>
+                </div>
+                <div class="option" data-component="base" data-value="floating">
+                  <div class="option-preview floating-base"></div>
+                  <span>Floating</span>
+                </div>
+                <div class="option" data-component="base" data-value="colored">
+                  <div class="option-preview colored-base"></div>
+                  <span>Colored</span>
+                </div>
+                <div class="option" data-component="base" data-value="sand">
+                  <div class="option-preview sand-base"></div>
+                  <span>Sandalwood</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Wish Section -->
+        <section class="wish-section">
+          <h2><i class="fas fa-heart"></i> Make Your Wish</h2>
+          <div class="wish-input-container">
+            <textarea id="wish-text" placeholder="Type your wish here... (What would you like to pray for?)" maxlength="200"></textarea>
+            <div class="wish-actions">
+              <button id="ai-suggest-wish" class="btn btn-secondary">
+                <i class="fas fa-magic"></i> AI Suggest Wish
+              </button>
+              <div class="character-count">
+                <span id="char-count">0</span>/200
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <section class="action-section">
+          <div class="button-group">
+            <button id="float-krathong" class="btn btn-primary">
+              <i class="fas fa-water"></i> Float My Krathong
+            </button>
+            <button id="clear-all" class="btn btn-danger">
+              <i class="fas fa-trash"></i> Clear River
+            </button>
+          </div>
+        </section>
+
+        <!-- Share Section -->
+        <section class="share-section">
+          <h2><i class="fas fa-share-alt"></i> Share Your Krathong</h2>
+          <div class="share-buttons">
+            <button id="share-facebook" class="btn btn-social facebook">
+              <i class="fab fa-facebook"></i> Share on Facebook
+            </button>
+            <button id="share-twitter" class="btn btn-social twitter">
+              <i class="fab fa-twitter"></i> Share on Twitter
+            </button>
+            <button id="copy-link" class="btn btn-social">
+              <i class="fas fa-link"></i> Copy Link
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Krathong Preview -->
+  <div id="krathong-preview" class="krathong-preview">
+    <h3>Your Krathong Preview</h3>
+    <div class="preview-container">
+      <div class="preview-krathong">
+        <!-- Dynamic krathong preview -->
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
