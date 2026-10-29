@@ -85,9 +85,9 @@ section{padding:76px 0;scroll-margin-top:70px}
 .drift{position:absolute;left:0;z-index:1;will-change:transform;cursor:pointer;pointer-events:auto;opacity:var(--o,.6);
   animation:driftX linear 1 forwards;transition:opacity .3s}
 .drift:hover,.drift:focus-visible{opacity:1;z-index:2}
-.drift.active{opacity:1;z-index:3}
+.drift.active,.drift.mine{opacity:1;z-index:3}
 .drift .floaty{transition:filter .2s}
-.drift:hover .floaty,.drift.active .floaty{filter:brightness(1.18) drop-shadow(0 0 14px rgba(255,209,102,.5))}
+.drift:hover .floaty,.drift.active .floaty,.drift.mine .floaty{filter:brightness(1.18) drop-shadow(0 0 14px rgba(255,209,102,.5))}
 .drift svg{width:100%;height:auto}
 /* tooltip คำอธิษฐาน — เป็นลูกของ .drift จึงลอยไปพร้อมกระทง (--dx = ดันหลบขอบจอ) */
 .k-tip{position:absolute;bottom:calc(100% + 10px);left:50%;width:max-content;max-width:min(260px,72vw);
@@ -214,6 +214,7 @@ textarea::placeholder,.name-input::placeholder{color:#6d81a3}
   background:rgba(5,10,20,.85);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
   opacity:0;pointer-events:none;transition:opacity .4s}
 .overlay.show{opacity:1;pointer-events:auto}
+.overlay.reveal{transition-duration:1.1s}   /* หลังปล่อยกระทง ค่อย ๆ จางให้เห็นผืนน้ำด้านหลัง */
 body.modal-open{overflow:hidden}
 .ceremony{display:flex;flex-direction:column;align-items:center;text-align:center;width:min(94vw,560px)}
 .cer-stage{position:relative;width:100%;height:310px}
@@ -233,11 +234,6 @@ body.modal-open{overflow:hidden}
 .cer-name:empty{display:none}
 .cer-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px;transition:opacity .6s}
 .ceremony.sailing .cer-hint,.ceremony.sailing .cer-msg,.ceremony.sailing .cer-name,.ceremony.sailing .cer-actions{opacity:.12}
-.cer-done{display:flex;flex-direction:column;align-items:center;text-align:center}
-.cer-done .done-art{width:92px;margin-bottom:14px;opacity:.9}
-.cer-done .done-art svg{width:100%;height:auto}
-.cer-done h3{font-size:1.5rem;font-weight:700}
-.cer-done p{color:var(--muted);margin:12px auto 22px;max-width:38ch;font-size:.95rem}
 [hidden]{display:none !important}
 
 /* ---------- Toast / footer ---------- */
@@ -406,15 +402,6 @@ footer{border-top:1px solid var(--line);padding:36px 0;text-align:center;backgro
     <div class="cer-actions">
       <button class="btn btn-primary" id="releaseBtn">ปล่อยลอยกระทง</button>
       <button class="btn btn-ghost" id="cancelBtn">ย้อนกลับ</button>
-    </div>
-  </div>
-  <div class="cer-done" id="cerDone" hidden>
-    <div class="done-art" id="doneArt"></div>
-    <h3>ลอยกระทงเรียบร้อยแล้ว</h3>
-    <p id="doneQuote"></p>
-    <div class="cer-actions">
-      <button class="btn btn-primary" id="newBtn">สร้างกระทงใหม่</button>
-      <button class="btn btn-ghost" id="viewBtn">ดูคำอวยพรทั้งหมด</button>
     </div>
   </div>
 </div>
@@ -898,7 +885,7 @@ function timeAgo(ts){
   return new Date(t).toLocaleDateString('th-TH',{day:'numeric',month:'short'});
 }
 function isMine(item){ return owned.has(item.id); }
-function metaText(item){ return (item.name ? 'โดย '+item.name+' · ' : '') + timeAgo(item.createdAt); }
+function metaText(item){ return (isMine(item) ? 'กระทงของคุณ · ' : '') + (item.name ? 'โดย '+item.name+' · ' : '') + timeAgo(item.createdAt); }
 
 function buildCard(item){
   const card = document.createElement('article');
@@ -1017,19 +1004,23 @@ async function refreshStats(){
 /* ============ กระทงของคนอื่นลอยผ่านหน้าจอ ============ */
 const driftQueue = [];
 const driftedIds = new Set();
-function spawnDrift(item){
-  if(driftedIds.has(item.id)) return;
+/* mine = กระทงที่เพิ่งปล่อย: ลอยเสมอไม่ติดเพดาน ใหญ่และเด่นกว่า เริ่มในจอทันที */
+function spawnDrift(item, mine){
+  if(driftedIds.has(item.id) && !mine) return null;
   driftedIds.add(item.id);
   const layer = $('#driftLayer');
-  if(layer.querySelectorAll('.drift').length >= CONFIG.maxDriftOnScreen) return;
+  if(mine) removeDrift(item.id);   // polling หยิบไปลอยก่อนแล้ว ให้ลำนี้แทน
+  else if(layer.querySelectorAll('.drift').length >= CONFIG.maxDriftOnScreen) return null;
   const el = document.createElement('div');
-  el.className = 'drift';
+  el.className = mine ? 'drift mine' : 'drift';
   el.dataset.id = item.id;
-  el.style.top = (8+Math.random()*52)+'%';
-  el.style.width = (44+Math.random()*64)+'px';
+  const dur = mine ? 64 : 42+Math.random()*40;
+  el.style.top = (mine ? 30 : 8+Math.random()*52)+'%';
+  el.style.width = (mine ? 96 : 44+Math.random()*64)+'px';
   el.style.setProperty('--o', (.4+Math.random()*.35).toFixed(2));
-  el.style.animationDuration = (42+Math.random()*40)+'s';
-  el.style.animationDelay = (-Math.random()*30)+'s';
+  el.style.animationDuration = dur+'s';
+  // driftX วิ่ง -18vw → 112vw (130vw) — ของเราข้ามช่วงนอกจอ ให้โผล่ที่ราว 8vw
+  el.style.animationDelay = (mine ? -dur*26/130 : -Math.random()*30)+'s';
   el.setAttribute('role','button');
   el.tabIndex = 0;
   el.setAttribute('aria-expanded','false');
@@ -1050,6 +1041,7 @@ function spawnDrift(item){
     el.remove();
   });
   layer.appendChild(el);
+  return el;
 }
 function removeDrift(id){
   const el = [...document.querySelectorAll('.drift')].find(d=>d.dataset.id===id);
@@ -1119,14 +1111,27 @@ function openCeremony(){
   $('#cerMsg').textContent = state.message.trim();
   $('#cerName').textContent = state.name.trim() ? '— '+state.name.trim() : '';
   $('#cerStage').querySelectorAll('.cer-ripple').forEach(r=>r.remove());
-  $('#cerBox').hidden = false; $('#cerDone').hidden = true;
+  $('#cerBox').classList.remove('sailing');
   overlay.classList.add('show');
   document.body.classList.add('modal-open');
 }
+/* away/sailing ค้างไว้จนเปิดครั้งหน้า (openCeremony ล้างให้) กันกระทงโผล่กลับกลางจอระหว่าง fade */
 function closeCeremony(){
   overlay.classList.remove('show');
   document.body.classList.remove('modal-open');
-  setTimeout(()=>$('#cerK').classList.remove('away'),450);
+}
+/* หลังปล่อย: กระโดดขึ้นผืนน้ำด้านบนตอน overlay ยังทึบ แล้วค่อย fade ออกให้เห็นกระทงของเราลอยอยู่ */
+function revealOwnDrift(item){
+  scrollTo({ top:0, behavior:'instant' });   // ข้าม scroll-behavior:smooth ของ html
+  const el = spawnDrift(item, true);
+  el.focus({ preventScroll:true });   // ย้ายโฟกัสออกจากปุ่มใน overlay ที่กำลังจางหาย
+  overlay.classList.add('reveal');
+  closeCeremony();
+  return new Promise(resolve=>setTimeout(()=>{
+    overlay.classList.remove('reveal');
+    if(el.isConnected) toggleTip(el, item);   // เปิดคำอวยพรของเราให้เห็นลอยไปด้วย
+    resolve();
+  }, 1100));
 }
 function spawnRipples(){
   const stage = $('#cerStage');
@@ -1142,7 +1147,6 @@ async function releaseKrathong(payload){
     const { item, ownerToken } = await KrathongAPI.create(payload);
     rememberOwned(item.id, ownerToken);
     prependGalleryItems([item]);
-    spawnDrift(item);            // กระทงของเราลอยผ่านหน้าจอทันที
     setNet(true);
     return { item, offline:false };
   }catch(err){
@@ -1168,27 +1172,23 @@ $('#releaseBtn').addEventListener('click', async ()=>{
     message: state.message.trim(),
     name: state.name.trim(),
   };
+  const sailed = new Promise(r=>setTimeout(r, 3000));   // ยาวเท่า sailAway — ส่ง API ไปพร้อมกัน
   const result = await releaseKrathong(payload);
   if(result.error){
     toast(result.error.message || 'ลอยกระทงไม่สำเร็จ ลองอีกครั้ง');
     k.classList.remove('away'); $('#cerBox').classList.remove('sailing');
     return;
   }
-  setTimeout(()=>{
-    $('#doneQuote').textContent = pick(QUOTES);
-    $('#cerBox').hidden = true; $('#cerBox').classList.remove('sailing');
-    $('#cerDone').hidden = false;
-    if(result.offline) toast('เชื่อมต่อ API ไม่สำเร็จ — บันทึกไว้ในเครื่องชั่วคราว');
-    state.message=''; state.name='';
-    $('#messageInput').value=''; $('#nameInput').value='';
-    updatePreview();
-    refreshStats();
-  }, 3000);
+  await sailed;
+  state.message=''; state.name='';
+  $('#messageInput').value=''; $('#nameInput').value='';
+  updatePreview();
+  refreshStats();
+  await revealOwnDrift(result.item);
+  toast(result.offline ? 'เชื่อมต่อ API ไม่สำเร็จ — บันทึกไว้ในเครื่องชั่วคราว' : pick(QUOTES));
 });
 $('#floatBtn').addEventListener('click', openCeremony);
 $('#cancelBtn').addEventListener('click', closeCeremony);
-$('#newBtn').addEventListener('click', ()=>{ closeCeremony(); location.hash='#create'; });
-$('#viewBtn').addEventListener('click', ()=>{ closeCeremony(); $('#wishes').scrollIntoView({behavior:'smooth'}); });
 overlay.addEventListener('click', e=>{ if(e.target===overlay) closeCeremony(); });
 document.addEventListener('keydown', e=>{
   if(e.key!=='Escape') return;
@@ -1259,7 +1259,6 @@ async function pollLatest(){
 
 /* ============ เริ่มต้น ============ */
 $('#logo').innerHTML = krathongSVG({base:'tong',flower:'lotus',candle:'gold',incense:true});
-$('#doneArt').innerHTML = `<div class="floaty">${krathongSVG({base:'tong',flower:'lotus',candle:'gold',incense:true})}</div>`;
 buildBaseOptions(); buildFlowerOptions(); buildCandleOptions(); buildPresets();
 updatePreview(); spawnSky();
 
