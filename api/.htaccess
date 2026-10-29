@@ -1,0 +1,21 @@
+Options -Indexes
+DirectoryIndex index.php
+
+# schema / ไฟล์ซ่อน ห้ามดาวน์โหลด
+<FilesMatch "(\.sql|^\..*)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # บังคับ HTTPS — เอา comment ออกเมื่อ deploy จริง
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # config/ และ src/ เป็นโค้ดภายใน ห้ามเรียกตรง
+  RewriteRule ^(config|src)(/|$) - [F,L]
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>

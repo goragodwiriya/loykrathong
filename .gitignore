@@ -1,0 +1,10 @@
+# ค่าตั้งค่าจริง (รหัสผ่าน DB / app_secret) — ห้าม commit
+# ต้นแบบอยู่ที่ api/config/config.example.php
+api/config/config.php
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
